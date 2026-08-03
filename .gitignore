@@ -1,0 +1,32 @@
+# Secrets and identities
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+id_*
+*credentials*
+*secrets*
+*token*
+
+# Personal application state
+.ssh/
+.gnupg/
+.config/google-chrome/
+.config/Code/
+.config/TelegramDesktop/
+.config/sotavpn/
+*.history
+
+# Logs, caches and generated files
+*.log
+*.tmp
+*.swp
+.cache/
+build/
+dist/
+
+# Wallpapers are intentionally excluded until their redistribution license is known
+wallpapers/*
+!wallpapers/README.md

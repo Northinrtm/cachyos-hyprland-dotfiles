@@ -1,0 +1,141 @@
+* {
+    font-family: "MesloLGS Nerd Font", "FontAwesome", sans-serif;
+    font-size: 13px;
+    min-height: 0;
+}
+
+window#waybar {
+    background: rgba(24, 26, 32, 0.75);
+    border-radius: 14px;
+    color: #e0e2e8;
+}
+
+window#waybar.hidden {
+    opacity: 0.2;
+}
+
+#custom-ws1,
+#custom-ws2,
+#custom-ws3,
+#custom-ws4,
+#custom-ws5 {
+    padding: 0 10px;
+    margin: 4px 2px 4px 4px;
+    color: #7a7f8c;
+    background: transparent;
+    font-weight: 600;
+    min-width: 20px;
+}
+
+#custom-ws1.active,
+#custom-ws2.active,
+#custom-ws3.active,
+#custom-ws4.active,
+#custom-ws5.active {
+    color: #8ab4f8;
+}
+
+#custom-ws1:hover,
+#custom-ws2:hover,
+#custom-ws3:hover,
+#custom-ws4:hover,
+#custom-ws5:hover {
+    color: #e0e2e8;
+}
+
+#window {
+    color: #9aa0ac;
+    font-weight: 500;
+    padding: 0 10px;
+}
+
+#idle_inhibitor,
+#pulseaudio,
+#bluetooth,
+#custom-xiaomi-pad,
+#network,
+#power-profiles-daemon,
+#cpu,
+#memory,
+#temperature,
+#clock,
+#tray,
+#custom-power {
+    color: #e0e2e8;
+    padding: 0 10px;
+    margin: 4px 2px;
+    background: transparent;
+}
+
+#clock {
+    font-weight: 600;
+    margin-right: 6px;
+}
+
+#custom-power {
+    margin-right: 6px;
+    font-size: 15px;
+}
+
+#idle_inhibitor.activated {
+    color: #8ab4f8;
+}
+
+#pulseaudio.muted {
+    color: #7a7f8c;
+}
+
+#custom-xiaomi-pad {
+    font-size: 16px;
+}
+
+#custom-xiaomi-pad.active {
+    color: #81c995;
+}
+
+#custom-xiaomi-pad.partial {
+    color: #fdd663;
+}
+
+#custom-xiaomi-pad.inactive {
+    color: #e0e2e8;
+}
+
+#network.disconnected {
+    color: #f28b82;
+}
+
+#temperature.critical {
+    color: #f28b82;
+}
+
+#power-profiles-daemon.performance {
+    color: #f28b82;
+}
+
+#power-profiles-daemon.power-saver {
+    color: #81c995;
+}
+
+#tray {
+    margin: 4px 2px;
+    padding: 0 8px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+}
+
+tooltip {
+    background: rgba(24, 26, 32, 0.95);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+tooltip label {
+    color: #e0e2e8;
+}

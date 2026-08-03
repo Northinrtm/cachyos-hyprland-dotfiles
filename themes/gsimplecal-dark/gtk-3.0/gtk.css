@@ -1,0 +1,51 @@
+/* Dark theme for gsimplecal only, matched to the Waybar clock tooltip.
+   Applied via GTK_THEME=gsimplecal-dark in the waybar clock's on-click, so it
+   affects nothing else. Colours/radius mirror the `tooltip` rules in
+   ~/.config/waybar/style.css; font is 2x the bar's 13px. */
+
+@import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained-dark.css");
+
+/* GtkCalendar paints the selected day itself using the theme's selection colours
+   rather than CSS nodes, so `calendar:selected { color: }` alone does nothing —
+   the day text stays white and reads poorly on the light accent. Override the
+   theme colours instead. */
+@define-color theme_selected_bg_color #8ab4f8;
+@define-color theme_selected_fg_color #181a20;
+
+* {
+  font-family: "MesloLGS Nerd Font";
+  font-size: 26px;
+  color: #e0e2e8;
+}
+
+window, .background {
+  background-color: rgba(24, 26, 32, 0.95);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+calendar {
+  background-color: transparent;
+  color: #e0e2e8;
+  padding: 6px;
+}
+
+calendar:selected {
+  background-color: #8ab4f8;
+  color: #181a20;
+  border-radius: 6px;
+}
+
+calendar.header {
+  background-color: transparent;
+  border: none;
+  color: #9aa0ac;
+}
+
+button {
+  background: none;
+  background-image: none;
+  border: none;
+  box-shadow: none;
+  color: #9aa0ac;
+}

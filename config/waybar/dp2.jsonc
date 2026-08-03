@@ -1,0 +1,20 @@
+// -*- mode: jsonc -*-
+// Bar instance for the primary monitor (DP-2). Run independently so it can
+// be shown/hidden without affecting the bar on the other monitor.
+{
+    "output": "DP-2",
+    "include": ["modules.jsonc"],
+    "modules-right": [
+        "idle_inhibitor",
+        "hyprland/language",
+        "pulseaudio",
+        "bluetooth",
+        "custom/xiaomi-pad",
+        "cpu",
+        "memory",
+        "temperature",
+        "clock",
+        "tray",
+        "custom/power"
+    ]
+}

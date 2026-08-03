@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -u
+
+picker_pid=""
+cleanup() {
+    if [[ -n "$picker_pid" ]] && kill -0 "$picker_pid" 2>/dev/null; then
+        kill "$picker_pid" 2>/dev/null || true
+        wait "$picker_pid" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT INT TERM
+
+hyprpicker -r -z >/dev/null 2>&1 &
+picker_pid=$!
+sleep 0.2
+
+geometry=""
+if ! geometry=$(slurp); then
+    exit 0
+fi
+
+width=$(awk '{split($2, size, "x"); print size[1]}' <<< "$geometry")
+height=$(awk '{split($2, size, "x"); print size[2]}' <<< "$geometry")
+
+if [[ -z "$width" || -z "$height" || "$width" -le 1 || "$height" -le 1 ]]; then
+    exit 0
+fi
+
+grim -g "$geometry" - | wl-copy --type image/png

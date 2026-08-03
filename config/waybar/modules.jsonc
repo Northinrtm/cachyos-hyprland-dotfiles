@@ -1,0 +1,181 @@
+// -*- mode: jsonc -*-
+// Shared bar settings/modules, included by dp2.jsonc
+{
+    "layer": "top",
+    "position": "top",
+    "height": 34,
+    "spacing": 0,
+    "margin-top": 6,
+    "margin-left": 10,
+    "margin-right": 10,
+    "modules-left": [
+        "custom/ws1",
+        "custom/ws2",
+        "custom/ws3",
+        "custom/ws4",
+        "custom/ws5"
+    ],
+    "modules-center": [
+        "hyprland/window"
+    ],
+    "custom/ws1": {
+        "exec": "$HOME/.config/waybar/scripts/ws-status.sh 1",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 8,
+        "hide-empty-text": true,
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({workspace=1})'"
+    },
+    "custom/ws2": {
+        "exec": "$HOME/.config/waybar/scripts/ws-status.sh 2",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 8,
+        "hide-empty-text": true,
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({workspace=2})'"
+    },
+    "custom/ws3": {
+        "exec": "$HOME/.config/waybar/scripts/ws-status.sh 3",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 8,
+        "hide-empty-text": true,
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({workspace=3})'"
+    },
+    "custom/ws4": {
+        "exec": "$HOME/.config/waybar/scripts/ws-status.sh 4",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 8,
+        "hide-empty-text": true,
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({workspace=4})'"
+    },
+    "custom/ws5": {
+        "exec": "$HOME/.config/waybar/scripts/ws-status.sh 5",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 8,
+        "hide-empty-text": true,
+        "on-click": "hyprctl dispatch 'hl.dsp.focus({workspace=5})'"
+    },
+    "hyprland/window": {
+        "format": "{}",
+        "separate-outputs": true,
+        "max-length": 60,
+        "rewrite": {
+            "": "Рабочий стол"
+        }
+    },
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "",
+            "deactivated": ""
+        }
+    },
+    "hyprland/language": {
+        "format": "{}",
+        "format-en": "EN",
+        "format-en_US": "EN",
+        "format-ru": "RU",
+        "keyboard-name": "compx-2.4g-wireless-receiver"
+    },
+    "bluetooth": {
+        "format": " {status}",
+        "format-disabled": "",
+        "format-off": "",
+        "format-on": "",
+        "format-connected": " {device_alias}",
+        "format-connected-battery": " {device_alias} {device_battery_percentage}%",
+        "tooltip-format": "{controller_alias}\t{controller_address}",
+        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+        "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+        "on-click": "blueman-manager"
+    },
+    "network": {
+        "format-wifi": " {essid} ({signalStrength}%)",
+        "format-ethernet": "",
+        "tooltip-format": " {ifname} via {gwaddr}",
+        "format-linked": " {ifname} (No IP)",
+        "format-disconnected": "Disconnected"
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-bluetooth": "{icon} {volume}%",
+        "format-muted": "Muted",
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": [
+                "",
+                "",
+                ""
+            ]
+        },
+        "on-click": "pavucontrol"
+    },
+    "custom/xiaomi-pad": {
+        "exec": "$HOME/.local/bin/xiaomi-pad-studio waybar",
+        "return-type": "json",
+        "interval": 2,
+        "menu": "on-click",
+        "menu-file": "$HOME/.config/waybar/xiaomi_pad_menu.xml",
+        "menu-actions": {
+            "webcam": "$HOME/.local/bin/xiaomi-pad-studio webcam",
+            "audio": "$HOME/.local/bin/xiaomi-pad-studio audio",
+            "stop": "$HOME/.local/bin/xiaomi-pad-studio stop"
+        }
+    },
+    "cpu": {
+        "format": " {usage}%",
+        "tooltip-format": "core0: {usage0}%\ncore1: {usage1}%\ncore2: {usage2}%\ncore3: {usage3}%\ncore4: {usage4}%\ncore5: {usage5}%\ncore6: {usage6}%\ncore7: {usage7}%"
+    },
+    "memory": {
+        "format": " {}%"
+    },
+    "temperature": {
+        "critical-threshold": 80,
+        "tooltip": false,
+        "format": "{icon} {temperatureC}°C",
+        "format-icons": [
+            "",
+            "",
+            ""
+        ]
+    },
+    "clock": {
+        "format": "{:%H:%M   %a %d.%m.%Y}",
+        "tooltip": false,
+        // gsimplecal has no font/colour options of its own, so it gets a dedicated GTK
+        // theme (~/.themes/gsimplecal-dark). The calendar is click-only: no tooltip.
+        "on-click": "env GTK_THEME=gsimplecal-dark gsimplecal"
+    },
+    "tray": {
+        "spacing": 10
+    },
+    "custom/steam": {
+        "format": "",
+        "tooltip-format": "Steam",
+        // steam:// URI focuses the main window if Steam is already running,
+        // or launches the client if it isn't — unlike the tray icon, which
+        // Steam itself makes open a context menu on click instead.
+        "on-click": "steam steam://open/main &"
+    },
+    "custom/power": {
+        "format": "⏻",
+        "tooltip": false,
+        "menu": "on-click",
+        "menu-file": "$HOME/.config/waybar/power_menu.xml",
+        "menu-actions": {
+            "shutdown": "systemctl poweroff",
+            "reboot": "systemctl reboot",
+            "suspend": "systemctl suspend",
+            "logout": "hyprctl dispatch exit"
+        }
+    }
+}

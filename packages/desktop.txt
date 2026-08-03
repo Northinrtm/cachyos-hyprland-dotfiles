@@ -1,0 +1,61 @@
+# Hyprland session
+hyprland
+hypridle
+hyprlock
+hyprpaper
+hyprpicker
+hyprpolkitagent
+hyprlauncher
+xdg-desktop-portal-hyprland
+
+# Panel, launcher helpers and notifications
+waybar
+mako
+libnotify
+jq
+libxml2
+
+# Audio and Bluetooth
+pipewire
+pipewire-alsa
+pipewire-pulse
+wireplumber
+pavucontrol
+bluez
+bluez-utils
+blueman
+
+# Xiaomi Pad USB integration
+android-tools
+android-udev
+scrcpy
+v4l2loopback-dkms
+v4l2loopback-utils
+linux-cachyos-headers
+
+# Desktop applications used by key bindings
+alacritty
+nemo
+gsimplecal
+playerctl
+brightnessctl
+xorg-xrandr
+
+# Screenshots and clipboard
+grim
+slurp
+swappy
+hyprshot
+wl-clipboard
+
+# Appearance
+cachyos-nord-gtk-theme-git
+awesome-terminal-fonts
+ttf-meslo-nerd
+noto-fonts
+noto-fonts-cjk
+noto-fonts-emoji
+
+# Installer support
+git
+rsync

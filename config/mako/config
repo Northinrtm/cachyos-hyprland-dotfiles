@@ -1,0 +1,26 @@
+# Match the Waybar theme.
+font=MesloLGS Nerd Font 13
+background-color=#181a20f2
+text-color=#e0e2e8ff
+border-color=#ffffff1a
+progress-color=over #8ab4f8ff
+border-size=1
+border-radius=14
+width=360
+height=140
+outer-margin=12
+margin=8
+padding=14
+max-icon-size=42
+icon-border-radius=9
+anchor=top-right
+
+# Automatically dismiss notifications after five seconds.
+default-timeout=5000
+ignore-timeout=1
+
+[urgency=low]
+text-color=#9aa0acff
+
+[urgency=high]
+border-color=#f28b82ff

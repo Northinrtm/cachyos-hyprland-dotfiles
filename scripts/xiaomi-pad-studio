@@ -1,0 +1,272 @@
+#!/usr/bin/env bash
+
+set -u
+
+readonly APP_NAME="xiaomi-pad-studio"
+readonly STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/${APP_NAME}"
+readonly LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/${APP_NAME}"
+readonly CAMERA_DEVICE="/dev/video10"
+readonly MIC_SINK="xiaomi_pad_mic_sink"
+readonly MIC_SOURCE="xiaomi_pad_microphone"
+
+mkdir -p "$STATE_DIR" "$LOG_DIR"
+
+notify() {
+    if command -v notify-send >/dev/null 2>&1; then
+        notify-send "Xiaomi Pad Studio" "$1"
+    fi
+}
+
+running() {
+    local name="$1"
+    local pid_file="$STATE_DIR/$name.pid"
+    [[ -r "$pid_file" ]] && kill -0 "$(cat "$pid_file")" 2>/dev/null
+}
+
+find_tablet() {
+    adb devices | awk '$2 == "device" { print $1; exit }'
+}
+
+ensure_camera() {
+    if [[ ! -e "$CAMERA_DEVICE" ]]; then
+        pkexec /usr/bin/modprobe v4l2loopback \
+            video_nr=10 card_label=Xiaomi_Pad_6 exclusive_caps=1 || return 1
+    fi
+
+    [[ -e "$CAMERA_DEVICE" ]]
+}
+
+ensure_microphone() {
+    if ! pactl list short sinks | awk '{print $2}' | grep -Fxq "$MIC_SINK"; then
+        pactl load-module module-null-sink \
+            sink_name="$MIC_SINK" \
+            sink_properties=device.description=Xiaomi_Pad_Mic_Sink \
+            channels=1 rate=48000 >/dev/null || return 1
+    fi
+
+    if ! pactl list short sources | awk '{print $2}' | grep -Fxq "$MIC_SOURCE"; then
+        pactl load-module module-remap-source \
+            master="$MIC_SINK.monitor" \
+            source_name="$MIC_SOURCE" \
+            source_properties=device.description=Xiaomi_Pad_Microphone \
+            channels=1 >/dev/null || return 1
+    fi
+}
+
+move_mic_stream() {
+    local mic_pid="$1"
+    local input_id=""
+
+    for _ in {1..100}; do
+        input_id="$(
+            pactl --format=json list sink-inputs 2>/dev/null |
+                jq -r --arg pid "$mic_pid" \
+                    '.[] | select(.properties["application.process.id"] == $pid) | .index' |
+                head -n1
+        )"
+
+        if [[ -n "$input_id" ]]; then
+            pactl move-sink-input "$input_id" "$MIC_SINK"
+            pactl set-sink-input-volume "$input_id" 100%
+            return
+        fi
+        sleep 0.1
+    done
+
+    return 1
+}
+
+start_component() {
+    local name="$1"
+    shift
+
+    setsid "$@" >"$LOG_DIR/$name.log" 2>&1 &
+    echo "$!" >"$STATE_DIR/$name.pid"
+}
+
+tablet_serial() {
+    local serial
+    serial="$(find_tablet)"
+
+    if [[ -z "$serial" ]]; then
+        notify "Планшет не найден. Включите USB-отладку и подтвердите подключение."
+        echo "Xiaomi Pad 6 не найден через ADB." >&2
+        echo "Проверьте: adb devices" >&2
+        return 1
+    fi
+    printf '%s\n' "$serial"
+}
+
+start_audio_mode() {
+    local serial
+    serial="$(tablet_serial)" || return 1
+
+    ensure_microphone || {
+        notify "Не удалось создать виртуальный микрофон"
+        return 1
+    }
+
+    if ! running tablet; then
+        start_component tablet \
+            scrcpy --serial "$serial" \
+            --stay-awake \
+            --audio-source=output \
+            --audio-codec=opus \
+            --audio-bit-rate=192K \
+            --audio-buffer=120 \
+            --audio-output-buffer=30 \
+            --no-video \
+            --no-window
+    fi
+
+    if ! running microphone; then
+        start_component microphone \
+            env SDL_AUDIODRIVER=pulseaudio \
+            scrcpy --serial "$serial" \
+            --no-video \
+            --no-window \
+            --audio-source=mic \
+            --audio-codec=raw \
+            --audio-buffer=120 \
+            --audio-output-buffer=30
+
+        if ! move_mic_stream "$(cat "$STATE_DIR/microphone.pid")"; then
+            notify "Микрофон запущен, но его не удалось автоматически маршрутизировать"
+        fi
+    fi
+
+    notify "Подключено: звук планшета и микрофон Xiaomi_Pad_Microphone"
+    status_all
+}
+
+start_webcam_mode() {
+    local serial
+    serial="$(tablet_serial)" || return 1
+
+    ensure_camera || {
+        notify "Не удалось создать виртуальную камеру $CAMERA_DEVICE"
+        return 1
+    }
+    ensure_microphone || {
+        notify "Не удалось создать виртуальный микрофон"
+        return 1
+    }
+
+    start_component camera \
+        env SDL_AUDIODRIVER=pulseaudio \
+        scrcpy --serial "$serial" \
+        --video-source=camera \
+        --camera-facing=front \
+        --camera-size=1280x720 \
+        --camera-fps=30 \
+        --video-bit-rate=4M \
+        --v4l2-sink="$CAMERA_DEVICE" \
+        --no-window \
+        --audio-source=mic \
+        --audio-codec=raw \
+        --audio-buffer=120 \
+        --audio-output-buffer=30
+
+    if ! move_mic_stream "$(cat "$STATE_DIR/camera.pid")"; then
+        notify "Веб-камера запущена, но микрофон не удалось маршрутизировать"
+    fi
+
+    notify "Подключено: веб-камера Xiaomi_Pad_6 и микрофон Xiaomi_Pad_Microphone"
+    status_all
+}
+
+switch_mode() {
+    local mode="$1"
+    stop_all false
+    sleep 1
+
+    case "$mode" in
+        audio) start_audio_mode ;;
+        webcam) start_webcam_mode ;;
+    esac
+}
+
+stop_component() {
+    local name="$1"
+    local pid_file="$STATE_DIR/$name.pid"
+
+    if [[ -r "$pid_file" ]]; then
+        local pid
+        pid="$(cat "$pid_file")"
+        if kill -0 "$pid" 2>/dev/null; then
+            kill -- "-$pid" 2>/dev/null || kill "$pid" 2>/dev/null || true
+        fi
+        rm -f "$pid_file"
+    fi
+}
+
+stop_all() {
+    local show_notification="${1:-true}"
+    stop_component tablet
+    stop_component microphone
+    stop_component camera
+    if [[ "$show_notification" == "true" ]]; then
+        notify "Планшет отключён"
+    fi
+}
+
+status_all() {
+    if running camera; then
+        printf '%-11s веб-камера + микрофон (PID %s)\n' \
+            "mode:" "$(cat "$STATE_DIR/camera.pid")"
+        printf 'Веб-камера: %s\n' "$CAMERA_DEVICE"
+        printf 'Микрофон:   Xiaomi_Pad_Microphone\n'
+        return
+    fi
+
+    local name
+    for name in tablet microphone; do
+        if running "$name"; then
+            printf '%-11s работает (PID %s)\n' "$name:" "$(cat "$STATE_DIR/$name.pid")"
+        else
+            printf '%-11s остановлен\n' "$name:"
+        fi
+    done
+
+    printf 'Микрофон:   Xiaomi_Pad_Microphone\n'
+}
+
+waybar_status() {
+    if running camera; then
+        printf '%s\n' '{"text":"","class":"active","tooltip":"Xiaomi Pad 6\nВеб-камера • Микрофон"}'
+    elif running tablet && running microphone; then
+        printf '%s\n' '{"text":"","class":"active","tooltip":"Xiaomi Pad 6 подключён\nЗвук • Микрофон"}'
+    elif running tablet || running microphone || running camera; then
+        printf '%s\n' '{"text":"","class":"partial","tooltip":"Xiaomi Pad 6 запущен частично\nНажмите для перезапуска"}'
+    else
+        printf '%s\n' '{"text":"","class":"inactive","tooltip":"Запустить Xiaomi Pad Studio"}'
+    fi
+}
+
+case "${1:-start}" in
+    start)
+        switch_mode audio
+        ;;
+    audio)
+        switch_mode audio
+        ;;
+    webcam)
+        switch_mode webcam
+        ;;
+    stop)
+        stop_all
+        ;;
+    restart)
+        switch_mode audio
+        ;;
+    status)
+        status_all
+        ;;
+    waybar)
+        waybar_status
+        ;;
+    *)
+        echo "Использование: $0 {start|audio|webcam|stop|restart|status|waybar}" >&2
+        exit 2
+        ;;
+esac

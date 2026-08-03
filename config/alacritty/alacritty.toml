@@ -1,0 +1,13 @@
+# Copy/Paste биндинги по физическому положению клавиши (evdev keycode),
+# а не по символу — поэтому работают одинаково на любой раскладке
+# (KEY_C = 46, KEY_V = 47 в Linux evdev).
+
+[[keyboard.bindings]]
+key = 46
+mods = "Control|Shift"
+action = "Copy"
+
+[[keyboard.bindings]]
+key = 47
+mods = "Control|Shift"
+action = "Paste"
